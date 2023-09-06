@@ -1,5 +1,10 @@
 # Kubernetes Flash
+
+###### First couple of hours (#day 1) : setting up the Kubernetes cluster and pod, GCP permission, 
+###### Verifying that the service is deployed. Reverse approach end to end.
+
 Deploy fast a containerized application with simple API and deploy it with Kubernetes
+
 
 We work locally with a Virtual Environment named _kubernetes_flash_env_ with Python
 
@@ -211,3 +216,63 @@ So if you go in the public IP:
     http://130.211.89.241/
 
 ![app_works.png](app%2Fdoc%2Fapp_works.png)
+
+---
+
+###### Night (#day 1): starting the development of the real service by starting from the test (Test Driven Development TDD)
+
+installing the library for test:
+
+    pip install pytest
+
+Updating the requirements:
+
+    pip freeze > requirements.txt
+
+---
+
+###### Morning (#day2): make the assumption: Software evolves, APIs must be versioned
+
+When you build an API you try to not break the contract with the clients, 
+with sudden changes that they were not prepared to deal.
+
+So, keeping it simple: you can evolve your returing data in the API, 
+as long as the clients know this.
+
+### which paradigm for versioning API ?
+To decide how to version is a philosofical discussion.
+- Version via a request parameter
+- Version number as a date
+  - For example for API that changes often, like the one of Stripe, the strategy is to provide
+the version in this format `YYYYMMdd` in the Header.
+  
+- Accept header
+  - `curl -v -H 'Accept:application/vnd.example.v1+json' localhost:3000`
+- in the URL: /api/v1/..
+
+When you upgrade the software behind the API you are already breaking the contract with the client.
+
+Better to start simple and add fields later, rather than delete fields after, breaking the clients.
+
+Versioning the API could follow the Semantic Version paradigm.
+
+
+The decision I've made for this project test is this:
+
+
+
+If you don't specify the version, it means you are using the First version, 
+or the last version ?
+
+I choose the "**First version**" or the version that was the last or the newest
+when you first contract the client, if there is authentication and clients are
+paying for the API and registered users.
+
+
+----
+
+###### If you are not breaking things, you can just keep the current version, 
+###### but if you are sure you are breaking staff for the clients, you should avoid this
+###### and permit them to use the previous version until they are ready to use the latest version.
+
+---
