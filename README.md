@@ -171,7 +171,7 @@ Output:
 
 
 
-To Deploy to Kubernetes:
+To Deploy to Kubernetes the configuration:
 
     kubectl apply -f api-deployment.yaml
 
@@ -180,6 +180,10 @@ Output
     deployment.apps/api configured
     service/api created
 
+#### Force deploy:
+
+    kubectl delete pod <id_pod>
+----
 
 A POD is a structure where the Architecture of Kubernetes is based.
 Pod houses the containers.
@@ -188,7 +192,7 @@ A Kubernetes service is a set of PODs that work together inside a Kubernetes clu
 
 To see the PODs in Kubernetes:
     
-    kubect get pods
+    kubectl get pods
 
 Output:
     
