@@ -11,7 +11,7 @@ class TestConnectionSqlite(unittest.TestCase):
         super().setUp()
         self.app = DependencyContainer()
         self.config = self.app.config_conf()  # ConfigurationCONF
-        self.sql_connection = ConnectionSQLite(self.config, "CONNECTION_SQLITE_TEST")
+        self.sql_connection = ConnectionSQLite(self.config, "CONNECTION_SQLITE")
         self.csv_repository = RepositoryCsv(self.sql_connection)
 
     def test_get_connection_sqlite3(self):

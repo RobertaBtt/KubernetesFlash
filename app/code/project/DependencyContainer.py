@@ -1,10 +1,10 @@
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Singleton
-from project.connection.ConnectionSQLite import ConnectionSQLite
-
 from project.configuration.ConfigurationCONF import ConfigurationCONF
 from project.connection.ConnectionSQLite import ConnectionSQLite
 from project.service.ServiceCsv import ServiceCsv
+from project.repository.RepositoryCsv import RepositoryCsv
+
 
 class DependencyContainer(DeclarativeContainer):
 
@@ -12,6 +12,7 @@ class DependencyContainer(DeclarativeContainer):
 
     connection = Singleton(ConnectionSQLite, config_conf, "CONNECTION_SQLITE")
 
-    service_csv = Singleton(ConnectionSQLite, config_conf)
+    repository = Singleton(RepositoryCsv, connection)
 
+    service_csv = Singleton(ServiceCsv, config_conf, repository)
 

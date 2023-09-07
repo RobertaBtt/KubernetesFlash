@@ -1,12 +1,12 @@
 from flask import Blueprint, Response, request
 from .DependencyContainer import DependencyContainer
-
 import json
 import requests
-import csv
+from . import errors
 
 main = Blueprint("app", __name__)
 container = DependencyContainer()
+service_csv = container.service_csv()
 
 """Treating the CSV as a subentity of topic"""
 
@@ -14,10 +14,7 @@ container = DependencyContainer()
 @main.route('/topic/<string:topic>/csv/')
 def csv_by_topic(topic):
 
-    container.connection()
-    csv_list = []
-    csv_list.append('https://vincentarelbundock.github.io/Rdatasets/csv/AER/ArgentinaCPI.csv')
-    csv_list.append('https://vincentarelbundock.github.io/Rdatasets/csv/AER/CPS1985.csv')
+    csv_list = service_csv.get_csv_by_topic({'%TOPIC%': topic})
 
     response_dict = dict(
         topic=topic,
@@ -32,13 +29,22 @@ def csv_by_topic(topic):
 
 @main.route('/csv/<id>/')
 def csv_by_id(id):
-    url = 'https://vincentarelbundock.github.io/Rdatasets/csv/AER/ArgentinaCPI.csv'
-    # url = "https://vincentarelbundock.github.io/Rdatasets/csv/causaldata/mortgages.csv" #214 mila record
-    # url = "https://vincentarelbundock.github.io/Rdatasets/csv/wooldridge/loanapp.csv" # 58 colonne
-    # url = "https://vincentarelbundock.github.io/Rdatasets/csv/tidyr/billboard.csv" # 79 colonne
+
+    try:
+
+        csv = service_csv.get_csv_by_id({'%ID%': id})
+    except errors.ERRORS['OperationalError'] as ex:
+        response = Response(str(ex), status=503, mimetype="application/json")
+        return response
+
+    if csv is not None:
+        url = csv[1]
+
+    else:
+        response = Response(status=404, mimetype="application/json")
+        return response
 
     query_parameters = {"downloadedformat": "csv"}
-
     response = requests.get(url, params=query_parameters)
 
     with open("temp_file.csv", mode="wb") as file:
@@ -49,9 +55,8 @@ def csv_by_id(id):
             file.write(chunk)
             break
 
-    with open('temp_file.csv', newline='') as f:
-        csv_reader = csv.reader(f)
-        csv_header = next(csv_reader)
+    with open('temp_file.csv') as f:
+        csv_header = f.readline().strip('\n')
 
     data = json.dumps(csv_header)
     response = Response(data, status=200, mimetype="application/json")
@@ -62,9 +67,20 @@ def csv_by_id(id):
 @main.route('/csv', methods=['POST'])
 def add_csv():
     record = json.loads(request.data)
-    response = Response(request.data, status=200, mimetype="application/json")
+
+    try:
+        service_csv.add_csv({
+            '%URL%': record['url'],
+            '%TOPIC%': record['topic']
+        })
+
+    except errors.ERRORS['OperationalError'] as ex:
+        response = Response(str(ex), status=503, mimetype="application/json")
+        return response
+
+    response = Response( status=200, mimetype="application/json")
     response.headers["Content-Type"] = "text/json; charset=utf-8"
-    return record
+    return response
 
 
 @main.route('/')

@@ -2,6 +2,8 @@ import unittest
 from project.connection.ConnectionSQLite import ConnectionSQLite
 from project.DependencyContainer import DependencyContainer
 from project.repository.RepositoryCsv import RepositoryCsv
+import project.errors
+import tests
 
 
 class TestRepositoryCsv(unittest.TestCase):
@@ -10,18 +12,18 @@ class TestRepositoryCsv(unittest.TestCase):
         super().setUp()
         self.container = DependencyContainer()
         self.config = self.container.config_conf()  # ConfigurationCONF
-        self.sql_connection = ConnectionSQLite(self.config, "CONNECTION_SQLITE_TEST")
-
+        self.sql_connection = ConnectionSQLite(self.config, "CONNECTION_SQLITE")
         self.repository_csv = RepositoryCsv(self.sql_connection)
-        self.repository_csv.create("CREATE TABLE IF NOT EXISTS CSV (id INTEGER PRIMARY KEY AUTOINCREMENT," \
-                                   "url CHAR NOT NULL UNIQUE," \
-                                   "topic CHAR NOT NULL);")
+
         self.new_url = "http://host/domain/url_world.csv"
         self.sql_read_csv = "select * from CSV limit 1"
+
+        tests.create_table_csv()
 
     def test_add_csv(self):
         sql_create_csv = f"INSERT INTO CSV(url,topic) VALUES('{self.new_url}','new_topic');"
         self.repository_csv.create(sql_create_csv)
+
         result = self.repository_csv.read(self.sql_read_csv)
 
         id_csv, url, topic = result.fetchone()
@@ -41,7 +43,7 @@ class TestRepositoryCsv(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_drop_table(self):
-        self.repository_csv.delete("DROP table CSV")
+        self.repository_csv.delete("DROP table IF EXISTS CSV")
 
         with self.assertRaises(self.sql_connection.get_error('OperationalError')):
             self.repository_csv.read(self.sql_read_csv).fetchone()

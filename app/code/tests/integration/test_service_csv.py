@@ -3,7 +3,7 @@ from project.connection.ConnectionSQLite import ConnectionSQLite
 from project.DependencyContainer import DependencyContainer
 from project.repository.RepositoryCsv import RepositoryCsv
 from project.service.ServiceCsv import ServiceCsv
-
+import tests
 
 class TestServiceCsv(unittest.TestCase):
 
@@ -12,14 +12,13 @@ class TestServiceCsv(unittest.TestCase):
 
         self.container = DependencyContainer()
         self.config = self.container.config_conf()  # ConfigurationCONF
-        self.sql_connection = ConnectionSQLite(self.config, "CONNECTION_SQLITE_TEST")
+        self.sql_connection = ConnectionSQLite(self.config, "CONNECTION_SQLITE")
 
         self.repository_csv = RepositoryCsv(self.sql_connection)
         self.service_csv = ServiceCsv(self.config, self.repository_csv)
 
-        self.repository_csv.create("CREATE TABLE IF NOT EXISTS CSV (id INTEGER PRIMARY KEY AUTOINCREMENT," \
-                                   "url CHAR NOT NULL UNIQUE," \
-                                   "topic CHAR NOT NULL);")
+        tests.create_table_csv()
+
 
     def test_add_csv_and_get_by_topic(self):
         topic_1 = 'environment'
@@ -30,6 +29,7 @@ class TestServiceCsv(unittest.TestCase):
         self.service_csv.add_csv({'%URL%': url_2, '%TOPIC%': topic_1})
 
         res = self.service_csv.get_csv_by_topic({'%TOPIC%': topic_1})
+
         # [(1, 'https://host/wildfires.csv', 'environment')]
         # id, url, topic
 
@@ -48,6 +48,6 @@ class TestServiceCsv(unittest.TestCase):
         self.assertEqual(record[1], "https://host/wildfires.csv")
         self.assertEqual(record[2], "environment")
 
-        self.repository_csv.delete("DROP table CSV")
+        self.repository_csv.delete("DROP table IF EXISTS CSV")
 
 

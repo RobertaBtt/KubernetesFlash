@@ -3,12 +3,9 @@ from pathlib import Path
 import os
 from project.connection.ConnectionAbstract import ConnectionAbstract
 from project.configuration.ConfigurationAbstract import ConfigurationAbstract
+import project.errors as er
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-ERRORS = {
-    'OperationalError': sqlite3.OperationalError
-}
 
 
 class ConnectionSQLite(ConnectionAbstract):
@@ -23,6 +20,6 @@ class ConnectionSQLite(ConnectionAbstract):
             raise e
 
     def get_error(self, error: str):
-        return ERRORS[error] if error in ERRORS else None
+        return er.ERRORS[error] if error in er.ERRORS else None
 
 
