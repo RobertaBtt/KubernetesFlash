@@ -12,7 +12,6 @@ class RepositoryCsv(RepositoryAbstract):
             cursor = connection.cursor()
             cursor.execute(query)
             connection.commit()
-            cursor.close()
 
     def read_with_headers(self, query: str):
         with self.sql.get_connection() as connection:
@@ -26,12 +25,14 @@ class RepositoryCsv(RepositoryAbstract):
     def read(self, query: str):
         with self.sql.get_connection() as connection:
             cursor = connection.cursor()
-            return cursor.execute(query)
+            result = cursor.execute(query)
+
+        return result
 
     def update(self):
         pass
 
-    def delete(self, query:str):
+    def delete(self, query: str):
         with self.sql.get_connection() as connection:
             cursor = connection.cursor()
             cursor.execute(query)

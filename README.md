@@ -311,3 +311,6 @@ change the type of database later.
 Updated the POST request
 
 ---
+
+##### Morning day2
+Completed the repository for both entities csv and topic.

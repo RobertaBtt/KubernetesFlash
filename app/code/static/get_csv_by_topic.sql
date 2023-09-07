@@ -1,0 +1,1 @@
+SELECT * FROM CSV where topic = '%TOPIC%';

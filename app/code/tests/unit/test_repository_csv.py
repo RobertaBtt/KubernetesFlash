@@ -35,8 +35,6 @@ class TestRepositoryCsv(unittest.TestCase):
         new_id = self.repository_csv.read(f"select id from CSV where url = '{self.new_url}'").fetchone()[0]
         sql_delete_csv = f"DELETE from CSV where id = {new_id}"
 
-        print(sql_delete_csv)
-
         self.repository_csv.delete(sql_delete_csv)
 
         result = self.repository_csv.read(self.sql_read_csv).fetchone()
