@@ -48,6 +48,9 @@ class TestServiceCsv(unittest.TestCase):
         self.assertEqual(record[1], "https://host/wildfires.csv")
         self.assertEqual(record[2], "environment")
 
+    def test_get_csv_by_id_not_exist(self):
+        record = self.service_csv.get_csv_by_id({'%ID%': 9999})
+        self.assertIsNone(record)
         self.repository_csv.delete("DROP table IF EXISTS CSV")
 
 

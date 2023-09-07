@@ -314,3 +314,8 @@ Updated the POST request
 
 ##### Morning day2
 Completed the repository for both entities csv and topic.
+##### Afternoon day 2
+Completed the Tests, HTTP exception, verified end point,
+move code, refactoring.
+
+

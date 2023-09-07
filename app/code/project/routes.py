@@ -1,5 +1,6 @@
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, abort
 from .DependencyContainer import DependencyContainer
+from werkzeug.exceptions import HTTPException
 import json
 import requests
 from . import errors
@@ -10,39 +11,70 @@ service_csv = container.service_csv()
 
 """Treating the CSV as a subentity of topic"""
 
+"""Get the list of the CSV registered in the system, by the topic"""
+
+
+@main.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
+
+
+def handle_response(response_dictionary):
+    data = json.dumps(response_dictionary)
+    response = Response()
+    response.data = data
+    response.content_type = "application/json"
+    return response
+
 
 @main.route('/topic/<string:topic>/csv/')
 def csv_by_topic(topic):
+    try:
+        csv_list = service_csv.get_csv_by_topic({'%TOPIC%': topic})
+    except errors.ERRORS['OperationalError']:
+        exp = errors.OperationalError()
+        return handle_exception(exp)
+    except Exception as ex:
+        return handle_exception(ex)
 
-    csv_list = service_csv.get_csv_by_topic({'%TOPIC%': topic})
 
-    response_dict = dict(
-        topic=topic,
-        csv=csv_list
-    )
-    data = json.dumps(response_dict)
+    response_dictionary = dict(topic=topic, csv=csv_list)
 
-    response = Response(data, status=200, mimetype="application/json")
-    response.headers["Content-Type"] = "text/json; charset=utf-8"
-    return response
+    return handle_response(response_dictionary)
 
 
 @main.route('/csv/<id>/')
 def csv_by_id(id):
 
     try:
+        isinstance(int(id),int)
+    except ValueError as ex:
+        exp = errors.BadParameter()
+        return handle_exception(exp)
 
+    try:
         csv = service_csv.get_csv_by_id({'%ID%': id})
-    except errors.ERRORS['OperationalError'] as ex:
-        response = Response(str(ex), status=503, mimetype="application/json")
-        return response
+    except errors.ERRORS['OperationalError']:
+        exp = errors.OperationalError()
+        return handle_exception(exp)
+    except Exception as ex:
+        return handle_exception(ex)
 
     if csv is not None:
         url = csv[1]
-
     else:
-        response = Response(status=404, mimetype="application/json")
-        return response
+        resource_not_found = errors.ResourceNotFound()
+        return handle_exception(resource_not_found)
 
     query_parameters = {"downloadedformat": "csv"}
     response = requests.get(url, params=query_parameters)
@@ -58,15 +90,18 @@ def csv_by_id(id):
     with open('temp_file.csv') as f:
         csv_header = f.readline().strip('\n')
 
-    data = json.dumps(csv_header)
-    response = Response(data, status=200, mimetype="application/json")
-    response.headers["Content-Type"] = "text/json; charset=utf-8"
-    return response
+    response_dictionary = {'headers': csv_header}
+    return handle_response(response_dictionary)
+
 
 
 @main.route('/csv', methods=['POST'])
 def add_csv():
     record = json.loads(request.data)
+
+    if 'url' not in record or 'topic' not in record:
+        exp = errors.MissingParameters()
+        return handle_exception(exp)
 
     try:
         service_csv.add_csv({
@@ -74,13 +109,17 @@ def add_csv():
             '%TOPIC%': record['topic']
         })
 
-    except errors.ERRORS['OperationalError'] as ex:
-        response = Response(str(ex), status=503, mimetype="application/json")
-        return response
+    except errors.ERRORS['OperationalError']:
+        exp = errors.OperationalError()
+        return handle_exception(exp)
+    except errors.ERRORS['IntegrityError']:
+        exp = errors.IntegrityError()
+        return handle_exception(exp)
+    except Exception as ex:
+        return handle_exception(ex)
 
-    response = Response( status=200, mimetype="application/json")
-    response.headers["Content-Type"] = "text/json; charset=utf-8"
-    return response
+    response_dictionary = {'data': record}
+    return handle_response(response_dictionary)
 
 
 @main.route('/')

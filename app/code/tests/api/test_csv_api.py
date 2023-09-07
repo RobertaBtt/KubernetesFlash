@@ -11,6 +11,8 @@ from project.connection.ConnectionSQLite import ConnectionSQLite
 from project.DependencyContainer import DependencyContainer
 from project.repository.RepositoryCsv import RepositoryCsv
 from project.service.ServiceCsv import ServiceCsv
+import project.errors as er
+import pytest
 
 
 container = DependencyContainer()
@@ -53,6 +55,14 @@ def test_csv_by_id(test_client):
     response = test_client.get(f'/csv/{csv_id}/')
     assert response.status_code == 200
     assert b'"rownames,x,y,group"' in response.data
+
+
+def test_csv_by_id_not_exist(test_client):
+    csv_id = "9999"
+
+    response = test_client.get(f'/csv/{csv_id}/')
+
+    assert response.status_code == 404
 
 
 def test_drop_table(test_client):
