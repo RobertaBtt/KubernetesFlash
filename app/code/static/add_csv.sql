@@ -1,0 +1,1 @@
+INSERT INTO CSV(url,topic) VALUES('%URL%','%TOPIC%');

@@ -1,12 +1,12 @@
-import os
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
+from .DependencyContainer import DependencyContainer
+
 import json
 import requests
 import csv
 
 main = Blueprint("app", __name__)
-
-# API_KEY = os.environ['API_KEY']
+container = DependencyContainer()
 
 """Treating the CSV as a subentity of topic"""
 
@@ -14,6 +14,7 @@ main = Blueprint("app", __name__)
 @main.route('/topic/<string:topic>/csv/')
 def csv_by_topic(topic):
 
+    container.connection()
     csv_list = []
     csv_list.append('https://vincentarelbundock.github.io/Rdatasets/csv/AER/ArgentinaCPI.csv')
     csv_list.append('https://vincentarelbundock.github.io/Rdatasets/csv/AER/CPS1985.csv')
@@ -31,11 +32,10 @@ def csv_by_topic(topic):
 
 @main.route('/csv/<id>/')
 def csv_by_id(id):
-
     url = 'https://vincentarelbundock.github.io/Rdatasets/csv/AER/ArgentinaCPI.csv'
-    url = "https://vincentarelbundock.github.io/Rdatasets/csv/causaldata/mortgages.csv" #214 mila record
-    url = "https://vincentarelbundock.github.io/Rdatasets/csv/wooldridge/loanapp.csv" # 58 colonne
-    url = "https://vincentarelbundock.github.io/Rdatasets/csv/tidyr/billboard.csv" # 79 colonne
+    # url = "https://vincentarelbundock.github.io/Rdatasets/csv/causaldata/mortgages.csv" #214 mila record
+    # url = "https://vincentarelbundock.github.io/Rdatasets/csv/wooldridge/loanapp.csv" # 58 colonne
+    # url = "https://vincentarelbundock.github.io/Rdatasets/csv/tidyr/billboard.csv" # 79 colonne
 
     query_parameters = {"downloadedformat": "csv"}
 
@@ -57,6 +57,15 @@ def csv_by_id(id):
     response = Response(data, status=200, mimetype="application/json")
     response.headers["Content-Type"] = "text/json; charset=utf-8"
     return response
+
+
+@main.route('/csv', methods=['POST'])
+def add_csv():
+    record = json.loads(request.data)
+    response = Response(request.data, status=200, mimetype="application/json")
+    response.headers["Content-Type"] = "text/json; charset=utf-8"
+    return record
+
 
 @main.route('/')
 def index():

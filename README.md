@@ -1,6 +1,6 @@
 # Kubernetes Flash
 
-###### First couple of hours (#day 1) : setting up the Kubernetes cluster and pod, GCP permission, 
+###### First couple of hours : setting up the Kubernetes cluster and pod, GCP permission, 
 ###### Verifying that the service is deployed. Reverse approach end to end.
 
 Deploy fast a containerized application with simple API and deploy it with Kubernetes
@@ -14,6 +14,13 @@ We work locally with a Virtual Environment named _kubernetes_flash_env_ with Pyt
 Activate virtual environment:
 
     . kubernetes_flash_env/bin/activate
+
+### Build locally
+
+  docker build -t kubernetes_flash:v1 .
+
+
+----
 
 
 Since a docker-compose is provided, you can make the container up with this command:
@@ -110,25 +117,7 @@ To tell Google Cloud Container Registry to use this config file for credential
 
     docker-credential-gcr configure-docker
 
-
-Build the image of docker
-
-    docker build -t gcr.io/data-wrangling-397007/kubernetes_flash:v1 .
-
-
-Output:
-
-    Step 1/10 : FROM python:3
-     ---> 28d8ca9ad96d
-    Step 2/10 : ENV PYTHONUNBUFFERED 1
-     [...]
-    Step 10/10 : CMD [ "python", "app.py" ]
-     ---> Running in 5d053024a2f0
-    Removing intermediate container 5d053024a2f0
-     ---> 9d606c5761f4
-    Successfully built 9d606c5761f4
-    Successfully tagged gcr.io/data-wrangling-397007/kubernetes_flash:v1
-
+### Setting Credentials
 
 
 To authorize the configuration of docker (configure-docker it is the plugin previosly installed)
@@ -149,6 +138,21 @@ Output
 Provide the authentication, after the creation of the keys:
     
     cat ../keys/data-wrangling-397007-7aa2c47805e6.json | docker login -u _json_key --password-stdin https://gcr.io
+
+
+### Build and deploy to Kubernetes
+
+Build the image of docker
+
+    docker build -t gcr.io/data-wrangling-397007/kubernetes_flash:v1 .
+
+
+Output:
+
+    [...]  
+    Successfully tagged gcr.io/data-wrangling-397007/kubernetes_flash:v1
+
+
 
 
 Push the container to the Registry of the containers in Google Cloud:
@@ -231,7 +235,8 @@ Updating the requirements:
 
 ---
 
-###### Morning (#day2): make the assumption: Software evolves, APIs must be versioned
+###### Morning (#day 1): make the assumption: Software evolves, APIs must be versioned
+###### Thinking about the API versioning strategy
 
 When you build an API you try to not break the contract with the clients, 
 with sudden changes that they were not prepared to deal.
@@ -274,5 +279,35 @@ paying for the API and registered users.
 ###### If you are not breaking things, you can just keep the current version, 
 ###### but if you are sure you are breaking staff for the clients, you should avoid this
 ###### and permit them to use the previous version until they are ready to use the latest version.
+
+---
+
+###### Afternoon #day1
+
+### Test Driven Development
+Writing test for two endpoints.
+
+### How to update a service
+
+    kubectl set image deployment.apps/api api=gcr.io/data-wrangling-397007/kubernetes_flash:v1
+    kubectl set image deployment.apps/api api=gcr.io/data-wrangling-397007/kubernetes_flash
+
+    
+Output:
+
+    deployment.apps/api image updated
+  
+
+
+---
+
+###### Evening #day1
+- Introduced the Dependency Container.
+- Introduced the connection SQLiteConnection
+- the POST route which needs a light DB (SQLLite) to store the list of CSV
+- I want my program to be flexible enough if I want to 
+change the type of database later.
+
+Updated the POST request
 
 ---

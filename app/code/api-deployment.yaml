@@ -17,6 +17,7 @@ spec:
       containers:
       - name: api
         image: gcr.io/data-wrangling-397007/kubernetes_flash:v1
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 5000
           name: http
