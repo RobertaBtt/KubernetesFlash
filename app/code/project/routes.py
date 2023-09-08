@@ -69,7 +69,6 @@ def csv_by_id(csv_id):
         resource_not_found = errors.ResourceNotFound()
         return handle_exception(resource_not_found)
 
-
     try:
         response = requests.get(url, params={"downloadedformat": "csv"})
     except Exception as ex:
@@ -99,11 +98,14 @@ def add_csv():
         exp = errors.MissingParameters()
         return handle_exception(exp)
 
+    url = record['url']
     try:
         service_csv.add_csv({
             '%URL%': record['url'],
             '%TOPIC%': record['topic']
         })
+
+        csv = service_csv.get_csv_by_url({'%URL%': url})
 
     except errors.ERRORS['OperationalError']:
         exp = errors.OperationalError()
@@ -114,7 +116,7 @@ def add_csv():
     except Exception as ex:
         return handle_exception(ex)
 
-    response_dictionary = {'data': record}
+    response_dictionary = {'data': csv}
     return handle_response(response_dictionary)
 
 

@@ -15,6 +15,7 @@ def __create_query__(file_query, values_dict:dict ):
 
     return sql_script
 
+
 class ServiceCsv():
 
     def __init__(self, config: ConfigurationAbstract, repository: RepositoryAbstract):
@@ -45,3 +46,10 @@ class ServiceCsv():
         csv_records = result.fetchall()
         return csv_records
 
+    def get_csv_by_url(self, values_dict: dict):
+        file_path = "get_csv_by_url.sql"
+        file_query = os.path.join(BASE_DIR, self.static_folder, file_path)
+        query = __create_query__(file_query, values_dict)
+
+        result = self.repository.read(query)
+        return result.fetchone()
