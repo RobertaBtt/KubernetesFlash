@@ -1,8 +1,5 @@
 # Kubernetes Flash
 
-###### First couple of hours : setting up the Kubernetes cluster and pod, GCP permission, 
-###### Verifying that the service is deployed. Reverse approach end to end.
-
 Deploy fast a containerized application with simple API and deploy it with Kubernetes
 
 
@@ -15,41 +12,40 @@ Activate virtual environment:
 
     . kubernetes_flash_env/bin/activate
 
-### Build locally
+## Run locally
 
-  docker build -t kubernetes_flash:v1 .
-
-
-----
+    docker-compose down && docker-compose up --build
 
 
-Since a docker-compose is provided, you can make the container up with this command:
+#### Build and tag the Image
 
-    docker-compose up
-
-
-To see the situation of currently running docker containers:
-
-    docker ps
+    docker build -t kubernetes_flash:v1 .
 
 
+To see the docker process that are running now and in the past:
 
-Initialization with Google Cloud:
+    docker ps --all
+
+
+## Google Cloud Platform 
+
+If you want to deploy this service with the Kubernetes cluseter offerend by Google, 
+you have to first initialize your Google Cloud account
+
 
     gcloud init
 
 
-Setting the project of Google Cloud:
+##### Setting the project of Google Cloud:
 
     gcloud config set project data-wrangling-397007
 
-Install Kubernetes command line:
+##### Install Kubernetes command line:
 
     snap install kubectl --classic
 
 
-
-Creating the Cluster
+##### Creating the Cluster
 
     gcloud container clusters create flashcluster --num-nodes 1 --region europe-west1
 
@@ -97,27 +93,14 @@ Output
       https://cloud.google.com/sdk/release_notes
     
     Do you want to continue (Y/n)?  Y
-    
-    ╔════════════════════════════════════════════════════════════╗
-    ╠═ Creating update staging area                             ═╣
-    ╠════════════════════════════════════════════════════════════╣
-    ╠═ Installing: Google Container Registry's Docker creden... ═╣
-    ╠════════════════════════════════════════════════════════════╣
-    ╠═ Installing: Google Container Registry's Docker creden... ═╣
-    ╠════════════════════════════════════════════════════════════╣
-    ╠═ Creating backup and activating new installation          ═╣
-    ╚════════════════════════════════════════════════════════════╝
-    
-    Performing post processing steps...done.                                                                                                                                      
-    
+    [...]
     Update done!
-
+---
 To tell Google Cloud Container Registry to use this config file for credential 
-
 
     docker-credential-gcr configure-docker
 
-### Setting Credentials
+### Setting Google Cloud Credentials
 
 
 To authorize the configuration of docker (configure-docker it is the plugin previosly installed)
@@ -171,7 +154,7 @@ Output:
 
 
 
-To Deploy to Kubernetes the configuration:
+##### To Deploy to Kubernetes the configuration of the pods and service:
 
     kubectl apply -f api-deployment.yaml
 
@@ -226,8 +209,11 @@ So if you go in the public IP:
 ![app_works.png](app%2Fdoc%2Fapp_works.png)
 
 ---
+##### Log work
 
-###### Night (#day 1): starting the development of the real service by starting from the test (Test Driven Development TDD)
+First couple of hours : setting up the Kubernetes cluster and pod, GCP permission, 
+Verifying that the service is deployed. Reverse approach end to end.
+(#day 1): starting the development of the real service by starting from the test (Test Driven Development TDD)
 
 installing the library for test:
 
@@ -239,8 +225,10 @@ Updating the requirements:
 
 ---
 
-###### Morning (#day 1): make the assumption: Software evolves, APIs must be versioned
-###### Thinking about the API versioning strategy
+#day 1: 
+
+make the assumption: Software evolves, APIs must be versioned
+ Thinking about the API versioning strategy
 
 When you build an API you try to not break the contract with the clients, 
 with sudden changes that they were not prepared to deal.
@@ -248,7 +236,7 @@ with sudden changes that they were not prepared to deal.
 So, keeping it simple: you can evolve your returing data in the API, 
 as long as the clients know this.
 
-### which paradigm for versioning API ?
+#### Which paradigm for versioning API ?
 To decide how to version is a philosofical discussion.
 - Version via a request parameter
 - Version number as a date
@@ -280,18 +268,18 @@ paying for the API and registered users.
 
 ----
 
-###### If you are not breaking things, you can just keep the current version, 
-###### but if you are sure you are breaking staff for the clients, you should avoid this
-###### and permit them to use the previous version until they are ready to use the latest version.
+If you are not breaking things, you can just keep the current version, 
+but if you are sure you are breaking staff for the clients, you should avoid this
+and permit them to use the previous version until they are ready to use the latest version.
 
 ---
 
-###### Afternoon #day1
+###### #day1
 
-### Test Driven Development
+#### Test Driven Development
 Writing test for two endpoints.
 
-### How to update a service
+#### How to update a service
 
     kubectl set image deployment.apps/api api=gcr.io/data-wrangling-397007/kubernetes_flash:v1
     kubectl set image deployment.apps/api api=gcr.io/data-wrangling-397007/kubernetes_flash
@@ -305,7 +293,7 @@ Output:
 
 ---
 
-###### Evening #day1
+######  #day1
 - Introduced the Dependency Container.
 - Introduced the connection SQLiteConnection
 - the POST route which needs a light DB (SQLLite) to store the list of CSV
@@ -314,12 +302,16 @@ change the type of database later.
 
 Updated the POST request
 
+Running Tests
 ---
 
-##### Morning day2
+######  #day2
 Completed the repository for both entities csv and topic.
-##### Afternoon day 2
+
 Completed the Tests, HTTP exception, verified end point,
 move code, refactoring.
 
+Running Tests
+
+###### Reviewed this Readme.
 
