@@ -1,6 +1,8 @@
-from flask import Blueprint, Response, request, abort
+from flask import Blueprint, Response, request
 from .DependencyContainer import DependencyContainer
 from werkzeug.exceptions import HTTPException
+from socket import error as  socket_error
+
 import json
 import requests
 from . import errors
@@ -9,15 +11,8 @@ main = Blueprint("app", __name__)
 container = DependencyContainer()
 service_csv = container.service_csv()
 
-"""Treating the CSV as a subentity of topic"""
-
-"""Get the list of the CSV registered in the system, by the topic"""
-
-
 @main.errorhandler(HTTPException)
 def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors."""
-    # start with the correct headers and status code from the error
     response = e.get_response()
     # replace the body with JSON
     response.data = json.dumps({
@@ -47,23 +42,21 @@ def csv_by_topic(topic):
     except Exception as ex:
         return handle_exception(ex)
 
-
     response_dictionary = dict(topic=topic, csv=csv_list)
-
     return handle_response(response_dictionary)
 
 
-@main.route('/csv/<id>/')
-def csv_by_id(id):
+@main.route('/csv/<csv_id>/')
+def csv_by_id(csv_id):
 
     try:
-        isinstance(int(id),int)
-    except ValueError as ex:
+        isinstance(int(csv_id),int)
+    except ValueError:
         exp = errors.BadParameter()
         return handle_exception(exp)
 
     try:
-        csv = service_csv.get_csv_by_id({'%ID%': id})
+        csv = service_csv.get_csv_by_id({'%ID%': csv_id})
     except errors.ERRORS['OperationalError']:
         exp = errors.OperationalError()
         return handle_exception(exp)
@@ -76,18 +69,21 @@ def csv_by_id(id):
         resource_not_found = errors.ResourceNotFound()
         return handle_exception(resource_not_found)
 
-    query_parameters = {"downloadedformat": "csv"}
-    response = requests.get(url, params=query_parameters)
 
-    with open("temp_file.csv", mode="wb") as file:
-        # Since we just need the header, I don't save the entire file,
-        # but just one chunk of 1kb, enough to contain
-        # the header even for files with 100 columns
-        for chunk in response.iter_content(chunk_size=1024):
-            file.write(chunk)
-            break
+    try:
+        response = requests.get(url, params={"downloadedformat": "csv"})
+    except Exception as ex:
+        return handle_exception(ex)
 
-    with open('temp_file.csv') as f:
+    if response.status_code == 404:
+        exp = errors.NameResolutionError()
+        return handle_exception(exp)
+
+    file_name = url.split("/")[-1]
+
+    container.downloader(file_name, response)
+
+    with open(file_name) as f:
         csv_header = f.readline().strip('\n')
 
     response_dictionary = {'headers': csv_header}

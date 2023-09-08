@@ -17,6 +17,11 @@ class ResourceNotFound(HTTPException):
     description = "Resource not found in the database"
 
 
+class NameResolutionError(HTTPException):
+    code = 404
+    description = "Resource not found in this URL."
+
+
 class BadParameter(HTTPException):
     code = 400
     description = "Bad Parameter"

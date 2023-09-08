@@ -6,7 +6,6 @@ from project.DependencyContainer import DependencyContainer
 from project.repository.RepositoryCsv import RepositoryCsv
 
 
-
 # ----------------------------
 # Creation of the app
 # ----------------------------
@@ -15,6 +14,7 @@ def create_app():
     app = Flask(__name__)
     app.register_blueprint(main)
     return app
+
 
 @staticmethod
 def create_table_csv():
